@@ -1,5 +1,6 @@
 package com.oushelun.customer;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -7,6 +8,7 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +16,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -56,12 +61,18 @@ public class MainActivity extends AppCompatActivity {
     static String webaddress="47.96.173.116";
     static int salnumber=123;
 
+    String picturefileName = "picturefileName";//上传图片连续2次图片名不能相同，否则无法上传
+    int picturenumber = 0;
+
     private static final int SDK_PAY_FLAG = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //EnvUtils.setEnv(EnvUtils.EnvEnum.SANDBOX);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //读写权限
+        checkPermission();
 
         this.api = WXAPIFactory.createWXAPI(this, "wxc7ff179d403b7a51");//注册微信appid
 
@@ -140,7 +151,15 @@ public class MainActivity extends AppCompatActivity {
     @android.webkit.JavascriptInterface
     public void qr(){
         //扫码
-        startActivity(new Intent(MainActivity.this,QRActivity.class));
+        //动态获取相机权限
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CAMERA},1);
+        }else {
+            startActivity(new Intent(MainActivity.this,QRActivity.class));
+            //startActivityForResult(new Intent(MainActivity.this, CaptureActivity.class),0);
+        }
+
+
     }
     @android.webkit.JavascriptInterface
     public void countdown(String expireDate,String salname,String cosname){
@@ -254,13 +273,23 @@ public class MainActivity extends AppCompatActivity {
 //        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
 
         //2.拍照 指定文件名
-        String path = Environment.getExternalStorageDirectory() + ""; //获取路径
-        String fileName = "PortraitFromCamera.jpg";//定义文件名
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath(); //获取路径
+        String fileName = picturefileName+picturenumber+".jpg";//定义文件名
         File file = new File(path,fileName);
         if(!file.getParentFile().exists()){//文件夹不存在
             file.getParentFile().mkdirs();
         }
-        Uri imageUri = Uri.fromFile(file);
+
+        Uri imageUri;
+        //判断android版本，7.0的相机路径读取有修改
+        if (Build.VERSION.SDK_INT >= 24) {
+            //  大于等于24即为7.0及以上执行内容
+            imageUri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
+        } else {
+            //  低于24即为7.0以下执行内容
+            imageUri = Uri.fromFile(file);
+        }
+
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
        // startActivityForResult(intent, FILE_CHOOSER_RESULT_CODE);//takePhotoRequestCode是自己定义的一个请求码
@@ -272,9 +301,36 @@ public class MainActivity extends AppCompatActivity {
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS,
                 new Intent[] { takePhotoIntent });
 
-        startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
-    }
+        //动态获取相机权限
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CAMERA},1);
+        }else {
+            startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
+            //startActivityForResult(new Intent(MainActivity.this, CaptureActivity.class),0);
+        }
 
+    }
+    private void checkPermission() {
+        String[] PERMISSIONS_STORAGE = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+        //检查权限（NEED_PERMISSION）是否被授权 PackageManager.PERMISSION_GRANTED表示同意授权
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            //用户已经拒绝过一次，再次弹出权限申请对话框需要给用户一个解释
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission
+                    .WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(this, "请开通相关权限，否则无法正常使用本应用！", Toast.LENGTH_SHORT).show();
+            }
+            //申请权限
+            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, 1);
+
+        } else {
+            Toast.makeText(this, "授权成功！", Toast.LENGTH_SHORT).show();
+
+        }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -298,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode != FILE_CHOOSER_RESULT_CODE || uploadMessageAboveL == null)
             return;
         Uri[] results = null;
-
+        Log.d("照片code", resultCode+"");
         if (resultCode == Activity.RESULT_OK) {
 
             if (intent != null) {
@@ -312,9 +368,9 @@ public class MainActivity extends AppCompatActivity {
                             actualImage = FileUtil.from(this,  item.getUri());
                             //compressedImage=new Compressor(this).compressToFile(actualImage);
                             compressedImage = new Compressor(this)
-                                    .setMaxWidth(2080)
-                                    .setMaxHeight(2080)
-                                    .setQuality(100)
+                                    .setMaxWidth(1024)
+                                    .setMaxHeight(1024)
+                                    .setQuality(70)
                                     .compressToFile(actualImage);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -329,9 +385,9 @@ public class MainActivity extends AppCompatActivity {
                         actualImage = FileUtil.from(this, intent.getData());
                         //compressedImage = new Compressor(this).compressToFile(actualImage);
                         compressedImage = new Compressor(this)
-                                .setMaxWidth(2080)
-                                .setMaxHeight(2080)
-                                .setQuality(100)
+                                .setMaxWidth(1024)
+                                .setMaxHeight(1024)
+                                .setQuality(70)
                                 .compressToFile(actualImage);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -339,25 +395,42 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("Compresso1r", "Compresse1d image save in " + compressedImage.toURI().toString());
                     results = new Uri[]{Uri.parse(compressedImage.toURI().toString())};
                 }
+
             }else{
+
                 //拍照不返回intent，所以直接取拍照时指定的图片路径和名称
-                String path = Environment.getExternalStorageDirectory() + ""; //获取路径
-                String fileName = "PortraitFromCamera.jpg";//定义文件名
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath(); //获取路径
+                String fileName = picturefileName+picturenumber+".jpg";//定义文件名
                 File file = new File(path,fileName);
-                Uri imageUri = Uri.fromFile(file);
+
+                Uri imageUri;
+                //判断android版本，7.0的相机路径读取有修改
+                if (Build.VERSION.SDK_INT >= 24) {
+                    //  大于等于24即为7.0及以上执行内容
+                    imageUri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
+                } else {
+                    //  低于24即为7.0以下执行内容
+                    imageUri = Uri.fromFile(file);
+                }
+                //Uri imageUri = Uri.fromFile(file);
                 try {//图片压缩
                     actualImage = file;
                     //compressedImage = new Compressor(this).compressToFile(actualImage);
                     compressedImage = new Compressor(this)
-                            .setMaxWidth(2080)
-                            .setMaxHeight(2080)
-                            .setQuality(100)
+                            .setMaxWidth(1024)
+                            .setMaxHeight(1024)
+                            .setQuality(70)
                             .compressToFile(actualImage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 //results=new Uri[]{imageUri};
+                Log.d("Compressor", "Compressed image save in " + results);
                 results=new Uri[]{Uri.parse(compressedImage.toURI().toString())};
+
+                Log.d("照片", compressedImage.toURI().toString());
+
+                picturenumber=picturenumber+1;
             }
         }
         uploadMessageAboveL.onReceiveValue(results);
