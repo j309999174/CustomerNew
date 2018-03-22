@@ -4,3 +4,18 @@
 活动通知     NewNotification
 未读信息通知 Messagenote
 倒计时通知   CountdownService
+
+6.0动态申请权限，checkPermission()
+
+7.0通过FileProvider 获取拍照路径。步骤如下：
+    1.AndroidManifest.xml中加入provider
+    2.res下增加xml/provider_paths.xml
+    3.imageUri = Uri.fromFile(file);变为 imageUri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
+
+加载页步骤如下：
+    1.增加style  <style name="AppWelcome" parent="AppTheme">
+                     <item name="android:windowBackground">@drawable/welcomeimg</item>
+                 </style>
+    2.设MainActivity的android:theme="@style/AppWelcome"
+    3.webview.setBackgroundColor(0); // 设置webview背景色空
+      webview.setBackgroundResource(R.drawable.welcomeimg);//设webview背景图

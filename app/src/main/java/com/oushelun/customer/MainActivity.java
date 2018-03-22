@@ -143,8 +143,12 @@ public class MainActivity extends AppCompatActivity {
             //Toast.makeText(getApplicationContext(), targetUrl, Toast.LENGTH_LONG).show();
         }
 
+        webview.setBackgroundColor(0); // 设置背景色
+        //webview.getBackground().setAlpha(0); // 设置填充透明度 范围：0-255
+        webview.setBackgroundResource(R.drawable.welcomeimg);
         webview.loadUrl(targetUrl);
         webview.addJavascriptInterface(MainActivity.this,"android");
+        webview.setVisibility(webview.VISIBLE); // 加载完之后进行设置显示，以免加载时初始化效果不好看
 
 
     }
@@ -301,19 +305,16 @@ public class MainActivity extends AppCompatActivity {
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS,
                 new Intent[] { takePhotoIntent });
 
-        //动态获取相机权限
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CAMERA},1);
-        }else {
             startActivityForResult(chooserIntent, FILE_CHOOSER_RESULT_CODE);
             //startActivityForResult(new Intent(MainActivity.this, CaptureActivity.class),0);
-        }
+
 
     }
     private void checkPermission() {
         String[] PERMISSIONS_STORAGE = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
         };
         //检查权限（NEED_PERMISSION）是否被授权 PackageManager.PERMISSION_GRANTED表示同意授权
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
