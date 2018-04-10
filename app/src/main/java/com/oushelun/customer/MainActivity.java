@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private long exitTime = 0;
     //172.114.10.238
     //192.168.1.106
-    static String webaddress="47.96.173.116";
+    static String webaddress="https://www.oushelun.cn";
     static int salnumber=123;
 
     String picturefileName = "picturefileName";//上传图片连续2次图片名不能相同，否则无法上传
@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
 
         webview.setBackgroundColor(0); // 设置背景色
         //webview.getBackground().setAlpha(0); // 设置填充透明度 范围：0-255
+        //webview.setBackgroundResource(R.drawable.welcomeimg);
         webview.setBackgroundResource(R.drawable.welcomeimg);
         webview.loadUrl(targetUrl);
         webview.addJavascriptInterface(MainActivity.this,"android");
