@@ -16,6 +16,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Administrator on 2017/11/21.
@@ -23,6 +25,7 @@ import java.sql.Statement;
 
 public class MessagenoteService extends Service {
     NotificationManager manager;//通知控制类
+    int frontnote_ID=1;//必须大于0，否则前台服务不启动
     int notification_ID=1;
 
     String notitle;
@@ -66,7 +69,18 @@ public class MessagenoteService extends Service {
                             editorunread.commit();
                             //3.通知
                             Intent intent = new Intent(context, MainActivity.class);
-                            intent.putExtra("nolink", "/customer/cosmetologist");
+                            // 按指定模式在字符串查找
+                            String line = rs.getString(2);
+                            String pattern = "(\\d+)";
+                            // 创建 Pattern 对象
+                            Pattern r = Pattern.compile(pattern);
+                            // 现在创建 matcher 对象
+                            Matcher m = r.matcher(line);
+                            if (m.find( )) {
+                                System.out.println("Found value: " + m.group(0));
+                            }
+                            String chalink = "/customer/chat/"+m.group(0)+ "/cosmetologist";
+                            intent.putExtra("nolink", chalink);
                             PendingIntent pintent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
                             Notification.Builder builder = new Notification.Builder(context);
                             builder.setSmallIcon(R.drawable.ic_launcher);//设置图标
@@ -137,7 +151,7 @@ public class MessagenoteService extends Service {
         intent.putExtra("nolink", "/customer/cosmetologist");
         PendingIntent pintent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         Notification.Builder builder = new Notification.Builder(context);
-        builder.setSmallIcon(R.drawable.ic_launcher);//设置图标
+        builder.setSmallIcon(R.drawable.corporatelogo);//设置图标
         builder.setTicker("");//手机状态栏的提示；
         builder.setWhen(System.currentTimeMillis());//设置时间
         builder.setContentTitle("美容师为您服务");//设置标题
@@ -145,7 +159,7 @@ public class MessagenoteService extends Service {
         builder.setContentIntent(pintent);//点击后的意图
         //builder.setDefaults(Notification.DEFAULT_ALL);//设置震动
         Notification notification = builder.build();//4.1以上
-        startForeground(notification_ID, notification);
+        startForeground(frontnote_ID, notification);
 
         return super.onStartCommand(intent1, flags, startId);
 
