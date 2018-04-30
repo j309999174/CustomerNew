@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private long exitTime = 0;
     //172.114.10.238
     //192.168.1.106
-    static String webaddress="https://www.oushelun.cn";
+    static String webaddress="www.oushelun.cn";
     static int salnumber=123;
 
     String picturefileName = "picturefileName";//上传图片连续2次图片名不能相同，否则无法上传
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //默认的主页
-        targetUrl = "http://"+webaddress+"/customer/homepage/"+salnumber;
+        targetUrl = "https://"+webaddress+"/customer/homepage/"+salnumber;
 
         //扫码页的跳转
         //Bundle extras = getIntent().getExtras();
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         String nolink = getIntent().getStringExtra("nolink");
 
         if (null != nolink) {
-            targetUrl = "http://"+webaddress+nolink;
+            targetUrl = "https://"+webaddress+nolink;
             //Toast.makeText(getApplicationContext(), targetUrl, Toast.LENGTH_LONG).show();
         }
 
