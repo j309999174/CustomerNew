@@ -47,7 +47,7 @@ public class NewNotificationService extends Service {
                 try {
                     //注册驱动
                     Class.forName("com.mysql.jdbc.Driver");
-                    String url = "jdbc:mysql://47.96.173.116:3306/company";
+                    String url = "jdbc:mysql://39.105.36.168:3306/company";
                     java.sql.Connection conn = DriverManager.getConnection(url, "cusmysql", "j12321456");
                     Statement stmt = conn.createStatement();
                     //当天日期
