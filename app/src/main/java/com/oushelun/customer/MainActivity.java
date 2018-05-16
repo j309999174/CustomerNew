@@ -167,6 +167,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
     @android.webkit.JavascriptInterface
+    public void shareapp(String appurl){
+        Intent intent=new Intent(Intent.ACTION_SEND);
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "分享");
+        intent.putExtra(Intent.EXTRA_TEXT, appurl);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(Intent.createChooser(intent, "分享应用"));
+    }
+    @android.webkit.JavascriptInterface
     public void countdown(String expireDate,String salname,String cosname){
         Log.e("henhaodejishiqi",""+expireDate);
         //倒计时
