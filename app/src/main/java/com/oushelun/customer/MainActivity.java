@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     //172.114.10.238
     //192.168.1.106
     static String webaddress="www.oushelun.cn";
-    static int salnumber=123;
+    //static int salnumber=123; 已废除，应用改为通用
 
     String picturefileName = "picturefileName";//上传图片连续2次图片名不能相同，否则无法上传
     int picturenumber = 0;
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //默认的主页
-        targetUrl = "https://"+webaddress+"/customer/homepage/"+salnumber;
+        targetUrl = "https://"+webaddress+"/customer/homepage";
 
         //扫码页的跳转
         //Bundle extras = getIntent().getExtras();
@@ -188,14 +188,14 @@ public class MainActivity extends AppCompatActivity {
     }
     //用户登陆后id的储存，mysql的查询
     @android.webkit.JavascriptInterface
-    public void cusidsave(final int cusid){
+    public void cusidsave(final int cusid,final int salnumber){
         Log.d("nihao", "cusid"+cusid);
         SharedPreferences sharedPreferences=getSharedPreferences("mycusid",MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putInt("cusid",cusid);
         editor.putInt("salnumber",salnumber);
         editor.commit();
-        Log.d("nihao", "cusid"+cusid);
+        Log.d("nihao", "cusid"+cusid+"salnumber"+salnumber);
         //通知线程的开始
         new Thread(newrunnable).start();
     }
@@ -477,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
             //xml
             GetNo getNo =new GetNo();
             try {
-                String[] newNO= getNo.getNo("http://"+webaddress+"/customerajax/notificationxml/"+salnumber);
+                String[] newNO= getNo.getNo("http://"+webaddress+"/customerajax/notificationxml");
                 if (!newNO[0].equals(null)){
                     Intent intent1=new Intent(MainActivity.this,NotificationService.class);
                     intent1.putExtra("notitle",newNO[0]);
