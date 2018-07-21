@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         //默认的主页
-        targetUrl = "https://"+webaddress+"/customer/homepage";
+        targetUrl = "https://"+webaddress+"/customer/homepage/123";
 
         //扫码页的跳转
         //Bundle extras = getIntent().getExtras();
